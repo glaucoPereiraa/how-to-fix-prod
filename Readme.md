@@ -1,58 +1,116 @@
-Perfeito.
-Vou te entregar algo **bem direto e pronto pra usar com a equipe**.
+# Laboratório de Falhas de Produção
 
-A ideia é você ter:
+## Sobre o projeto
 
-* **erro real de produção**
-* **por que não aparece em dev**
-* **mini código com bug**
-* **o que o dev precisa corrigir**
+Este repositório foi criado com o objetivo de **simular problemas reais de produção** por meio de exercícios práticos.
 
-Isso vira um **laboratório de falhas reais**.
+A proposta é sair do cenário comum de desenvolvimento — onde tudo funciona localmente — e expor situações que frequentemente ocorrem em ambiente produtivo, como:
+
+* timeouts de integrações externas
+* concorrência e duplicidade de processamento
+* ausência de logs e observabilidade
+* falhas de consistência de dados
+* problemas de performance em escala
+
+Cada exercício foi pensado para desenvolver:
+
+* senso de responsabilidade sobre o código entregue
+* visão de comportamento em produção
+* capacidade de investigação de incidentes
+* aplicação de boas práticas de resiliência
 
 ---
 
-# 1. Timeout de integração externa sem tratamento
+## Estrutura do repositório
 
-## Erro real
+O repositório está organizado em **pastas de exercícios independentes**:
 
-API externa demora → request trava → fila acumula → sistema cai.
-
-## Por que não aparece em dev
-
-* mock rápido
-* localhost rápido
-* sem latência real
-
-## Código com bug
-
-```php
-public function handle()
-{
-    $response = Http::get('https://api.pagamento.com/status/'.$this->paymentId);
-
-    if ($response->successful()) {
-        Payment::where('id', $this->paymentId)
-            ->update(['status' => $response['status']]);
-    }
-}
+```
+/exercise1
+/exercise2
+/exercise3
+...
 ```
 
-## Problemas
+Dentro de cada pasta você encontrará:
 
-* sem timeout
-* sem retry
-* sem log
-* pode travar worker
-
-## O que corrigir
-
-* timeout
-* retry
-* log estruturado
-* fallback
+* um **README específico** explicando o cenário do problema
+* um **código em modo de desenvolvimento**, que aparentemente funciona sem erros
+* uma configuração de **Docker Compose** para simular o comportamento de produção
 
 ---
+
+## Simulação de produção com Docker
+
+Para tornar os cenários mais realistas:
+
+* cada exercício pode utilizar uma **imagem de produção já preparada**
+* essa imagem é distribuída via **Docker Hub**
+* o `docker compose` do exercício faz o **pull direto dessa imagem**
+* o ambiente resultante reproduz o **erro real de produção desejado**
+
+Enquanto isso:
+
+* o código presente na pasta representa o **estado de desenvolvimento**
+* quando executado isoladamente, ele **não apresenta falhas aparentes**
+
+Isso cria intencionalmente a diferença entre:
+
+> **“funciona localmente”**
+> vs
+> **“falha em produção”**
+
+---
+
+## Objetivo dos exercícios
+
+Cada exercício desafia o participante a:
+
+1. **Reproduzir o problema de produção**
+2. **Investigar a causa raiz**
+3. **Corrigir o código de forma segura**
+4. **Aplicar boas práticas de engenharia**
+5. **Garantir que o erro não volte a ocorrer**
+
+O foco não é apenas corrigir o bug, mas desenvolver:
+
+* pensamento crítico
+* maturidade operacional
+* responsabilidade sobre impacto em produção
+
+---
+
+## Público-alvo
+
+Este laboratório é voltado para:
+
+* desenvolvedores backend
+* equipes que trabalham com sistemas distribuídos
+* times que desejam evoluir cultura de engenharia e qualidade
+
+Especialmente útil para:
+
+* treinamentos internos
+* onboarding técnico
+* workshops de confiabilidade
+* preparação para incidentes reais
+
+---
+
+## Observação importante
+
+Os códigos e arquiteturas presentes nos exercícios são **intencionalmente simplificados** para fins didáticos.
+
+O objetivo principal é:
+
+* evidenciar o problema
+* permitir investigação clara
+* facilitar a aplicação de soluções robustas
+
+Melhorias arquiteturais e sugestões de boas práticas são **bem-vindas e incentivadas**.
+
+---
+
 
 # 2. Dupla execução de Job (falta de idempotência)
 

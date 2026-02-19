@@ -1,0 +1,17 @@
+services:
+  exercise:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: exercise
+    ports:
+      - ${APP_PORT:-88}:80
+    volumes:
+      - ./:/var/www
+
+  exercise-prod:
+    image: glaucostarling/how-to-fix-prod:exercise1
+    container_name: exercise-prod
+    platform: linux/amd64
+    ports:
+      - ${APP_PORT_PROD:-80}:80
