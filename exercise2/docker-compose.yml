@@ -1,0 +1,79 @@
+services:
+  exercise:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: exercise
+    ports:
+      - ${APP_PORT:-88}:80
+    volumes:
+      - ./:/var/www
+    networks:
+      - exercise-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: >
+      sh -c "
+        set -e &&
+        composer install &&
+        php artisan migrate:fresh &&
+        php artisan db:seed &&
+        php-fpm -D &&
+        nginx -g 'daemon off;'
+      "
+
+  exercise-prod:
+    image: glaucostarling/how-to-fix-prod:exercise2
+    container_name: exercise-prod
+    platform: linux/amd64
+    ports:
+      - ${APP_PORT_PROD:-80}:80
+    networks:
+      - exercise-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: >
+      sh -c "
+        set -e &&
+        php artisan migrate:fresh --force &&
+        php artisan db:seed --force --class=DBProductionSeeder &&
+        php-fpm -D &&
+        nginx -g 'daemon off;'
+      "
+
+  mysql:
+    container_name: mysql
+    image: mysql:8.0
+    restart: unless-stopped
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./docker/mysql/create_dbs.sql:/docker-entrypoint-initdb.d/create_dbs.sql
+    ports:
+      - "3388:3306"
+    networks:
+      - exercise-net
+    deploy: # the lines below are to simulate a slow database in production, if you want comment them for first run to not be so slow
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+    command: --max_execution_time=10000
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+
+networks:
+  exercise-net:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local

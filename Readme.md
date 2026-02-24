@@ -184,35 +184,6 @@ DB::transaction(function () {
 
 ---
 
-# 4. Falta de índice causando lentidão extrema
-
-## Erro real
-
-Query simples → 30s → derruba banco.
-
-## Por que não aparece em dev
-
-* poucos dados
-
-## Código com bug
-
-```php
-Order::where('status', 'pending')
-    ->whereDate('created_at', now())
-    ->get();
-```
-
-## Problema
-
-* sem índice composto
-
-## Correção
-
-* criar índice
-* usar range ao invés de `whereDate`
-
----
-
 # 5. Uso errado de timezone
 
 ## Erro real
@@ -243,33 +214,6 @@ if ($order->expires_at < now()) {
 
 ---
 
-# 6. Falta de log em erro crítico
-
-## Erro real
-
-Bug acontece → ninguém sabe por quê.
-
-## Código com bug
-
-```php
-try {
-    PaymentGateway::send($data);
-} catch (\Exception $e) {
-    return false;
-}
-```
-
-## Problema
-
-* erro engolido
-
-## Correção
-
-* log estruturado
-* contexto
-* rethrow quando necessário
-
----
 
 # 7. N+1 escondido
 
@@ -390,3 +334,7 @@ Se quiser, eu posso no próximo passo montar:
 * **roteiro de aula pra você aplicar na equipe**
 
 Só me dizer que eu já te entrego o pacote pronto.
+
+-- REDIS
+
+-- RabbitMQ

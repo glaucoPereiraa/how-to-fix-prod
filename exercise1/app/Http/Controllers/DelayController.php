@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
 
 class DelayController extends Controller
 {
-    public function handle()
+    public function handle(): JsonResponse
     {
         try {
             $response = Http::get('https://httpbin.org/delay/3');
