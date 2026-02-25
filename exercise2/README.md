@@ -1,77 +1,175 @@
-# Exercício 1 — Timeout em APIs Externas
+# 📘 Exercise 2 — Simulating Database Timeout in Production
 
-## Contexto
+## 🎯 Objective
 
-Este exercício simula um **problema real de produção**:
-falhas ao consumir **APIs externas lentas ou indisponíveis**.
+This exercise demonstrates a real-world production issue:
 
-Em ambientes reais, a ausência de tratamento adequado de timeout pode causar:
+> A poorly optimized backend request that performs multiple heavy database queries, eventually causing a **database timeout** under constrained resources.
 
-* requisições travadas
-* filas congestionadas
-* efeito cascata de falhas
-* indisponibilidade parcial ou total do sistema
+The goal is to understand:
 
-O objetivo aqui é **trazer consciência de produção**, não apenas fazer o código “funcionar localmente”.
+* Why database timeouts are hard to simulate
+* How MySQL behaves under stress
+* The impact of resource limits in production
+* The difference between development and production environments
 
 ---
 
-## Rota do exercício
+## 🧠 Context
 
-Endpoint disponível para simulação:
+Simulating a real database timeout is **not trivial** because:
+
+* The default MySQL timeout is relatively high
+* MySQL is highly optimized
+* Modern machines are fast enough to handle heavy queries
+* Query execution time is different from connection timeout
+
+To reproduce a real failure scenario, the following changes were necessary:
+
+* Reduce MySQL CPU and memory resources
+* Configure `max_execution_time`
+* Generate a large dataset in the production environment
+* Separate environment initialization steps
+
+Because of this, the setup process requires special attention.
+
+---
+
+# ⚙️ First-Time Environment Setup
+
+⚠️ Important:
+Before running everything together, we must temporarily disable the MySQL resource limits.
+
+---
+
+## 1️⃣ Comment the `deploy` section in docker-compose
+
+Inside the `mysql` service, comment this section:
+
+```yaml
+deploy:
+  resources:
+    limits:
+      cpus: '0.25'
+      memory: 256M
+```
+
+This prevents the seed process from taking excessively long.
+
+---
+
+## 2️⃣ Start only the MySQL container
+
+```bash
+docker compose up mysql
+```
+
+Wait until the database is fully initialized.
+
+---
+
+## 3️⃣ Prepare Production Environment
+
+Run:
+
+```bash
+docker compose run exercise-prod sh -c "set -e && php artisan migrate:fresh --force && php artisan db:seed --force --class=DBProductionSeeder && php-fpm -D && nginx -g 'daemon off;'"
+```
+
+---
+
+## 4️⃣ Prepare Development Environment
+
+Run:
+
+```bash
+docker compose run exercise sh -c "set -e && composer install && php artisan migrate:fresh && php artisan db:seed && php-fpm -D && nginx -g 'daemon off;'"
+```
+
+⚠️ Depending on your machine performance, the seed process may take a long time.
+
+This is expected.
+
+---
+
+# 🚨 Activating the Timeout Scenario
+
+After the environment is fully prepared:
+
+1️⃣ Uncomment the `deploy` section in the MySQL service.
+
+2️⃣ Restart everything:
+
+```bash
+docker compose down
+```
+
+```bash
+docker compose up
+```
+
+Now the MySQL container will run with constrained CPU and memory.
+
+---
+
+# 🧪 Testing the Scenario
+
+Test the endpoint:
 
 ```
-http://localhost/api/delay
+/api/users
 ```
 
-Essa rota responde **intencionalmente com atraso**, simulando:
+Expected behavior:
 
-* lentidão de rede
-* timeout de serviço externo
-* comportamento comum em integrações reais
+| Environment | Result                 |
+| ----------- | ---------------------- |
+| Development | Works normally         |
+| Production  | Database timeout error |
 
----
+This simulates a real production degradation scenario caused by:
 
-## Objetivo do exercício
-
-Compreender e corrigir um cenário onde:
-
-* uma API externa é chamada **sem proteção**
-* o sistema **não trata timeout**
-* não existem **logs adequados**
-* não há **estratégia de retry ou fallback**
-
-O participante deve evoluir o código para um comportamento **seguro em produção**.
+* Heavy queries
+* Insufficient optimization
+* Resource constraints
 
 ---
 
-## Importante
+# ⚠️ Important Notes
 
-Este laboratório foi construído com foco **didático**:
+Simulating database stress is inherently unpredictable.
 
-* nomes simplificados
-* arquitetura propositalmente reduzida
-* ausência de padrões avançados
+You may experience:
 
-Isso é **intencional**, para que o foco seja:
+* Timeout errors (expected)
+* Memory allocation errors
+* Slow responses without timeout
 
-> identificar o problema
-> entender o risco em produção
-> aplicar uma solução robusta
+If you do **not** get a timeout:
 
-Nada impede — e é incentivado — que quem resolver:
+* Reduce CPU even further
+* Reduce memory limits
+* Lower `max_execution_time`
+* Increase dataset size
 
-* proponha melhorias arquiteturais
-* aplique boas práticas de observabilidade
-* utilize padrões de resiliência
+The objective is to reproduce stress, not to achieve a single deterministic error.
 
 ---
 
-## Resultados esperados
+# 🧩 What This Exercise Teaches
 
-Ao final do exercício, espera-se que o participante compreenda:
+* MySQL timeout ≠ connection timeout
+* Resource limits dramatically affect performance
+* Poorly optimized queries may work in development but fail in production
+* Reproducing production issues locally requires controlled degradation
 
-* por que timeout é crítico em produção
-* como proteger chamadas externas
-* a importância de logs úteis para investigação
-* a responsabilidade do desenvolvedor sobre o comportamento em produção
+---
+
+# 🏁 Final Result
+
+You now have:
+
+* A working development environment
+* A constrained production environment
+* A reproducible database stress scenario
+* A realistic timeout simulation

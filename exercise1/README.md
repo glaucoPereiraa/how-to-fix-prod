@@ -1,77 +1,78 @@
-# Exercício 1 — Timeout em APIs Externas
+# Exercise 1 — Timeout in External APIs
 
-## Contexto
+## Context
 
-Este exercício simula um **problema real de produção**:
-falhas ao consumir **APIs externas lentas ou indisponíveis**.
+This exercise simulates a **real production issue**:
+failures when consuming **slow or unavailable external APIs**.
 
-Em ambientes reais, a ausência de tratamento adequado de timeout pode causar:
+In real-world environments, the lack of proper timeout handling can cause:
 
-* requisições travadas
-* filas congestionadas
-* efeito cascata de falhas
-* indisponibilidade parcial ou total do sistema
+* stuck requests
+* overloaded queues
+* cascading failures
+* partial or total system downtime
 
-O objetivo aqui é **trazer consciência de produção**, não apenas fazer o código “funcionar localmente”.
+The goal is to build **production awareness**, not just make the code “work locally”.
 
 ---
 
-## Rota do exercício
+## Exercise Endpoint
 
-Endpoint disponível para simulação:
+Available route for simulation:
 
 ```
 http://localhost/api/delay
 ```
 
-Essa rota responde **intencionalmente com atraso**, simulando:
+This endpoint intentionally responds **with delay**, simulating:
 
-* lentidão de rede
-* timeout de serviço externo
-* comportamento comum em integrações reais
-
----
-
-## Objetivo do exercício
-
-Compreender e corrigir um cenário onde:
-
-* uma API externa é chamada **sem proteção**
-* o sistema **não trata timeout**
-* não existem **logs adequados**
-* não há **estratégia de retry ou fallback**
-
-O participante deve evoluir o código para um comportamento **seguro em produção**.
+* network latency
+* external service timeout
+* common behavior in real-world integrations
 
 ---
 
-## Importante
+## Objective
 
-Este laboratório foi construído com foco **didático**:
+Understand and fix a scenario where:
 
-* nomes simplificados
-* arquitetura propositalmente reduzida
-* ausência de padrões avançados
+* an external API is called **without protection**
+* the system **does not handle timeouts**
+* there are **no proper logs**
+* there is **no retry or fallback strategy**
 
-Isso é **intencional**, para que o foco seja:
-
-> identificar o problema
-> entender o risco em produção
-> aplicar uma solução robusta
-
-Nada impede — e é incentivado — que quem resolver:
-
-* proponha melhorias arquiteturais
-* aplique boas práticas de observabilidade
-* utilize padrões de resiliência
+The participant must evolve the code toward a **production-safe behavior**.
 
 ---
 
-## Resultados esperados
+## Important
 
-Ao final do exercício, espera-se que o participante compreenda:
+This lab was built with a **didactic focus**:
 
-* por que timeout é crítico em produção
-* como proteger chamadas externas
-* a importância de logs úteis para investigação
-* a responsabilidade do desenvolvedor sobre o comportamento em produção
+* simplified naming
+* intentionally reduced architecture
+* absence of advanced patterns
+
+This is **intentional**, so the focus remains on:
+
+> identifying the problem
+> understanding production risk
+> applying a robust solution
+
+Nothing prevents — and it is encouraged — that participants:
+
+* propose architectural improvements
+* apply observability best practices
+* implement resilience patterns
+
+---
+
+## Expected Outcomes
+
+By the end of this exercise, the participant should understand:
+
+* why timeouts are critical in production
+* how to protect external calls
+* the importance of meaningful logs for investigation
+* the developer’s responsibility for production behavior
+

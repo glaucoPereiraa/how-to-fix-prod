@@ -10,18 +10,6 @@ services:
       - ./:/var/www
     networks:
       - exercise-net
-    depends_on:
-      mysql:
-        condition: service_healthy
-    command: >
-      sh -c "
-        set -e &&
-        composer install &&
-        php artisan migrate:fresh &&
-        php artisan db:seed &&
-        php-fpm -D &&
-        nginx -g 'daemon off;'
-      "
 
   exercise-prod:
     image: glaucostarling/how-to-fix-prod:exercise2
@@ -31,17 +19,6 @@ services:
       - ${APP_PORT_PROD:-80}:80
     networks:
       - exercise-net
-    depends_on:
-      mysql:
-        condition: service_healthy
-    command: >
-      sh -c "
-        set -e &&
-        php artisan migrate:fresh --force &&
-        php artisan db:seed --force --class=DBProductionSeeder &&
-        php-fpm -D &&
-        nginx -g 'daemon off;'
-      "
 
   mysql:
     container_name: mysql
@@ -62,13 +39,7 @@ services:
         limits:
           cpus: '0.25'
           memory: 256M
-    command: --max_execution_time=10000
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD}"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 30s
+    command: --max_execution_time=5000
 
 networks:
   exercise-net:
