@@ -1,0 +1,55 @@
+services:
+  exercise:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: exercise
+    ports:
+      - ${APP_PORT:-88}:80
+    volumes:
+      - ./:/var/www
+    networks:
+      - exercise-net
+
+  exercise-prod:
+    image: glaucostarling/how-to-fix-prod:exercise3
+    container_name: exercise-prod
+    platform: linux/amd64
+    ports:
+      - ${APP_PORT_PROD:-80}:80
+    networks:
+      - exercise-net
+
+  mysql:
+    container_name: mysql
+    image: mysql:8.0
+    restart: unless-stopped
+    platform: linux/amd64
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3388:3306"
+    networks:
+      - exercise-net
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - exercise-net
+
+networks:
+  exercise-net:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
